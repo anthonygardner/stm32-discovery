@@ -1,0 +1,324 @@
+ARM GAS  /var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 6
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"main.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.file 1 "src/main.c"
+  20              		.section	.text.SystemInit,"ax",%progbits
+  21              		.align	1
+  22              		.global	SystemInit
+  23              		.syntax unified
+  24              		.thumb
+  25              		.thumb_func
+  27              	SystemInit:
+  28              	.LFB134:
+   1:src/main.c    **** // Bit shifting: <<
+   2:src/main.c    **** // 1 << 3 => shift the number 1 left by 3 positions in binary
+   3:src/main.c    **** // 1 in binary: 0000 0001
+   4:src/main.c    **** // 1 << 1: 0000 0010 = 2, 1 << 2: 0000 0100 = 4, 1 << 3: 0000 1000 = 8
+   5:src/main.c    **** // 1 << 4: 0001 0000 = 16, 0100 0000 = 32, 1000 0000 = 64
+   6:src/main.c    **** 
+   7:src/main.c    **** // Bitwise OR: |=
+   8:src/main.c    **** // (x |= y) is shorthand for (x = x | y)
+   9:src/main.c    **** // Use case: Turn ON specific bits without affecting others
+  10:src/main.c    **** 
+  11:src/main.c    **** // Bitwise AND with NOT: &= ~
+  12:src/main.c    **** // (x &= ~y) is shorthand for (x = x & (~y))
+  13:src/main.c    **** // ~ flips all bits (NOT operation)
+  14:src/main.c    **** // Use case: Turn OFF specific bits without affecting others
+  15:src/main.c    **** 
+  16:src/main.c    **** // Arrow operator: ->
+  17:src/main.c    **** // Used for accessing a member of a struct through a pointer
+  18:src/main.c    **** 
+  19:src/main.c    **** // Binary numbers (only uses 2 digits, 0 and 1)
+  20:src/main.c    **** // Note: In decimal, each position is a power of 10
+  21:src/main.c    **** // Decimal | Binary | How to read it
+  22:src/main.c    **** // --------|--------|---------------
+  23:src/main.c    **** // 0       | 0      | zero
+  24:src/main.c    **** // 1       | 1      | one
+  25:src/main.c    **** // 2       | 10     | one-zero
+  26:src/main.c    **** // 3       | 11     | one-one
+  27:src/main.c    **** // 4       | 100    | one-zero-zero
+  28:src/main.c    **** // 5       | 101    | one-zero-one
+  29:src/main.c    **** // 6       | 110    | one-one-zero
+  30:src/main.c    **** // 7       | 111    | one-one-one
+ARM GAS  /var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s 			page 2
+
+
+  31:src/main.c    **** 
+  32:src/main.c    **** // Get register names (GPIOD, RCC) and addresses
+  33:src/main.c    **** #include "stm32f407xx.h"
+  34:src/main.c    **** 
+  35:src/main.c    **** // Required by startup code
+  36:src/main.c    **** void SystemInit(void) {}
+  29              		.loc 1 36 23
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 1, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34 0000 80B4     		push	{r7}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 4
+  37              		.cfi_offset 7, -4
+  38 0002 00AF     		add	r7, sp, #0
+  39              	.LCFI1:
+  40              		.cfi_def_cfa_register 7
+  41              		.loc 1 36 24
+  42 0004 00BF     		nop
+  43 0006 BD46     		mov	sp, r7
+  44              	.LCFI2:
+  45              		.cfi_def_cfa_register 13
+  46              		@ sp needed
+  47 0008 5DF8047B 		ldr	r7, [sp], #4
+  48              	.LCFI3:
+  49              		.cfi_restore 7
+  50              		.cfi_def_cfa_offset 0
+  51 000c 7047     		bx	lr
+  52              		.cfi_endproc
+  53              	.LFE134:
+  55              		.section	.text.main,"ax",%progbits
+  56              		.align	1
+  57              		.global	main
+  58              		.syntax unified
+  59              		.thumb
+  60              		.thumb_func
+  62              	main:
+  63              	.LFB135:
+  37:src/main.c    **** 
+  38:src/main.c    **** int main(void) {
+  64              		.loc 1 38 16
+  65              		.cfi_startproc
+  66              		@ args = 0, pretend = 0, frame = 16
+  67              		@ frame_needed = 1, uses_anonymous_args = 0
+  68              		@ link register save eliminated.
+  69 0000 80B4     		push	{r7}
+  70              	.LCFI4:
+  71              		.cfi_def_cfa_offset 4
+  72              		.cfi_offset 7, -4
+  73 0002 85B0     		sub	sp, sp, #20
+  74              	.LCFI5:
+  75              		.cfi_def_cfa_offset 24
+  76 0004 00AF     		add	r7, sp, #0
+  77              	.LCFI6:
+  78              		.cfi_def_cfa_register 7
+  39:src/main.c    ****     // RCC: Reset and Clock Control register
+ARM GAS  /var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s 			page 3
+
+
+  40:src/main.c    ****     // AHB1ENR: 32-bit register inside RCC
+  41:src/main.c    ****     // Turn on power to GPIOD
+  42:src/main.c    ****     RCC->AHB1ENR |= (1 << 3);
+  79              		.loc 1 42 8
+  80 0006 294B     		ldr	r3, .L12
+  81 0008 1B6B     		ldr	r3, [r3, #48]
+  82 000a 284A     		ldr	r2, .L12
+  83              		.loc 1 42 18
+  84 000c 43F00803 		orr	r3, r3, #8
+  85 0010 1363     		str	r3, [r2, #48]
+  43:src/main.c    ****     
+  44:src/main.c    ****     // GPIOD: General Purpose Input/Output port D registers
+  45:src/main.c    ****     // MODER: MODE Register (controls pin function)
+  46:src/main.c    ****     // MODER uses 2 bits per pin to configure its mode
+  47:src/main.c    ****     // Decimal 3 is binary 11, which clears TWO adjacent bits (e.g., 24 and 25)
+  48:src/main.c    ****     // Configure pins 12-15 as outputs (all 4 LEDs)
+  49:src/main.c    ****     GPIOD->MODER &= ~((3 << 24) | (3 << 26) | (3 << 28) | (3 << 30));
+  86              		.loc 1 49 10
+  87 0012 274B     		ldr	r3, .L12+4
+  88 0014 1B68     		ldr	r3, [r3]
+  89 0016 264A     		ldr	r2, .L12+4
+  90              		.loc 1 49 18
+  91 0018 23F07F43 		bic	r3, r3, #-16777216
+  92 001c 1360     		str	r3, [r2]
+  50:src/main.c    ****     GPIOD->MODER |= ((1 << 24) | (1 << 26) | (1 << 28) | (1 << 30));
+  93              		.loc 1 50 10
+  94 001e 244B     		ldr	r3, .L12+4
+  95 0020 1B68     		ldr	r3, [r3]
+  96 0022 234A     		ldr	r2, .L12+4
+  97              		.loc 1 50 18
+  98 0024 43F0AA43 		orr	r3, r3, #1426063360
+  99 0028 1360     		str	r3, [r2]
+ 100              	.L11:
+  51:src/main.c    **** 
+  52:src/main.c    ****     // Checkpoint:
+  53:src/main.c    ****     // What is binary 110 in decimal?  6
+  54:src/main.c    ****     // What is binary 1111 in decimal? 15
+  55:src/main.c    ****     // What is decimal 6 in binary?    110
+  56:src/main.c    **** 
+  57:src/main.c    ****     while(1) {
+  58:src/main.c    ****         // ODR: Output Data Register
+  59:src/main.c    ****         // Turn on orange LED
+  60:src/main.c    ****         GPIOD->ODR |= (1 << 13);
+ 101              		.loc 1 60 14
+ 102 002a 214B     		ldr	r3, .L12+4
+ 103 002c 5B69     		ldr	r3, [r3, #20]
+ 104 002e 204A     		ldr	r2, .L12+4
+ 105              		.loc 1 60 20
+ 106 0030 43F40053 		orr	r3, r3, #8192
+ 107 0034 5361     		str	r3, [r2, #20]
+ 108              	.LBB2:
+  61:src/main.c    **** 
+  62:src/main.c    ****         // Crude "wait"
+  63:src/main.c    ****         for(volatile uint32_t i = 0; i < 5000000; i++);
+ 109              		.loc 1 63 31
+ 110 0036 0023     		movs	r3, #0
+ 111 0038 FB60     		str	r3, [r7, #12]
+ARM GAS  /var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s 			page 4
+
+
+ 112              		.loc 1 63 9
+ 113 003a 02E0     		b	.L3
+ 114              	.L4:
+ 115              		.loc 1 63 52 discriminator 3
+ 116 003c FB68     		ldr	r3, [r7, #12]
+ 117 003e 0133     		adds	r3, r3, #1
+ 118 0040 FB60     		str	r3, [r7, #12]
+ 119              	.L3:
+ 120              		.loc 1 63 40 discriminator 1
+ 121 0042 FB68     		ldr	r3, [r7, #12]
+ 122 0044 1B4A     		ldr	r2, .L12+8
+ 123 0046 9342     		cmp	r3, r2
+ 124 0048 F8D9     		bls	.L4
+ 125              	.LBE2:
+  64:src/main.c    **** 
+  65:src/main.c    ****         // Turn on blue LED
+  66:src/main.c    ****         GPIOD->ODR |= (1 << 15);
+ 126              		.loc 1 66 14
+ 127 004a 194B     		ldr	r3, .L12+4
+ 128 004c 5B69     		ldr	r3, [r3, #20]
+ 129 004e 184A     		ldr	r2, .L12+4
+ 130              		.loc 1 66 20
+ 131 0050 43F40043 		orr	r3, r3, #32768
+ 132 0054 5361     		str	r3, [r2, #20]
+ 133              	.LBB3:
+  67:src/main.c    **** 
+  68:src/main.c    ****         // Crude "wait"
+  69:src/main.c    ****         for(volatile uint32_t i = 0; i < 5000000; i++);
+ 134              		.loc 1 69 31
+ 135 0056 0023     		movs	r3, #0
+ 136 0058 BB60     		str	r3, [r7, #8]
+ 137              		.loc 1 69 9
+ 138 005a 02E0     		b	.L5
+ 139              	.L6:
+ 140              		.loc 1 69 52 discriminator 3
+ 141 005c BB68     		ldr	r3, [r7, #8]
+ 142 005e 0133     		adds	r3, r3, #1
+ 143 0060 BB60     		str	r3, [r7, #8]
+ 144              	.L5:
+ 145              		.loc 1 69 40 discriminator 1
+ 146 0062 BB68     		ldr	r3, [r7, #8]
+ 147 0064 134A     		ldr	r2, .L12+8
+ 148 0066 9342     		cmp	r3, r2
+ 149 0068 F8D9     		bls	.L6
+ 150              	.LBE3:
+  70:src/main.c    **** 
+  71:src/main.c    ****         // Turn off orange LED
+  72:src/main.c    ****         GPIOD->ODR &= ~(1 << 13);
+ 151              		.loc 1 72 14
+ 152 006a 114B     		ldr	r3, .L12+4
+ 153 006c 5B69     		ldr	r3, [r3, #20]
+ 154 006e 104A     		ldr	r2, .L12+4
+ 155              		.loc 1 72 20
+ 156 0070 23F40053 		bic	r3, r3, #8192
+ 157 0074 5361     		str	r3, [r2, #20]
+ 158              	.LBB4:
+  73:src/main.c    ****         
+ARM GAS  /var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s 			page 5
+
+
+  74:src/main.c    ****         // Crude "wait"
+  75:src/main.c    ****         for(volatile uint32_t i = 0; i < 5000000; i++);
+ 159              		.loc 1 75 31
+ 160 0076 0023     		movs	r3, #0
+ 161 0078 7B60     		str	r3, [r7, #4]
+ 162              		.loc 1 75 9
+ 163 007a 02E0     		b	.L7
+ 164              	.L8:
+ 165              		.loc 1 75 52 discriminator 3
+ 166 007c 7B68     		ldr	r3, [r7, #4]
+ 167 007e 0133     		adds	r3, r3, #1
+ 168 0080 7B60     		str	r3, [r7, #4]
+ 169              	.L7:
+ 170              		.loc 1 75 40 discriminator 1
+ 171 0082 7B68     		ldr	r3, [r7, #4]
+ 172 0084 0B4A     		ldr	r2, .L12+8
+ 173 0086 9342     		cmp	r3, r2
+ 174 0088 F8D9     		bls	.L8
+ 175              	.LBE4:
+  76:src/main.c    **** 
+  77:src/main.c    ****         // Turn off blue LED
+  78:src/main.c    ****         GPIOD->ODR &= ~(1 << 15);
+ 176              		.loc 1 78 14
+ 177 008a 094B     		ldr	r3, .L12+4
+ 178 008c 5B69     		ldr	r3, [r3, #20]
+ 179 008e 084A     		ldr	r2, .L12+4
+ 180              		.loc 1 78 20
+ 181 0090 23F40043 		bic	r3, r3, #32768
+ 182 0094 5361     		str	r3, [r2, #20]
+ 183              	.LBB5:
+  79:src/main.c    **** 
+  80:src/main.c    ****         // Crude "wait"
+  81:src/main.c    ****         for(volatile uint32_t i = 0; i < 5000000; i++);
+ 184              		.loc 1 81 31
+ 185 0096 0023     		movs	r3, #0
+ 186 0098 3B60     		str	r3, [r7]
+ 187              		.loc 1 81 9
+ 188 009a 02E0     		b	.L9
+ 189              	.L10:
+ 190              		.loc 1 81 52 discriminator 3
+ 191 009c 3B68     		ldr	r3, [r7]
+ 192 009e 0133     		adds	r3, r3, #1
+ 193 00a0 3B60     		str	r3, [r7]
+ 194              	.L9:
+ 195              		.loc 1 81 40 discriminator 1
+ 196 00a2 3B68     		ldr	r3, [r7]
+ 197 00a4 034A     		ldr	r2, .L12+8
+ 198 00a6 9342     		cmp	r3, r2
+ 199 00a8 F8D9     		bls	.L10
+ 200              	.LBE5:
+  60:src/main.c    **** 
+ 201              		.loc 1 60 20
+ 202 00aa BEE7     		b	.L11
+ 203              	.L13:
+ 204              		.align	2
+ 205              	.L12:
+ 206 00ac 00380240 		.word	1073887232
+ARM GAS  /var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s 			page 6
+
+
+ 207 00b0 000C0240 		.word	1073875968
+ 208 00b4 3F4B4C00 		.word	4999999
+ 209              		.cfi_endproc
+ 210              	.LFE135:
+ 212              		.text
+ 213              	.Letext0:
+ 214              		.file 2 "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/arm-none-eabi/include/machine/_defa
+ 215              		.file 3 "/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/arm-none-eabi/include/sys/_stdint.h
+ 216              		.file 4 "include/stm32f407xx.h"
+ARM GAS  /var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+/var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s:21     .text.SystemInit:00000000 $t
+/var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s:27     .text.SystemInit:00000000 SystemInit
+/var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s:56     .text.main:00000000 $t
+/var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s:62     .text.main:00000000 main
+/var/folders/3z/q201fp8d4sz3pzyww0j4ml_w0000gn/T//ccggiCN2.s:206    .text.main:000000ac $d
+
+NO UNDEFINED SYMBOLS
