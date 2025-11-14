@@ -54,16 +54,16 @@ int main(void) {
         // IDR: Input Data Register
         if (GPIOA->IDR & (1 << 0)) {
             // Turn on LEDs
+            GPIOD->ODR |= (1 << 12);
             GPIOD->ODR |= (1 << 13);
             GPIOD->ODR |= (1 << 14);
             GPIOD->ODR |= (1 << 15);
-            GPIOD->ODR |= (1 << 16);
         } else {
             // Keep LEDs off
+            GPIOD->ODR &= ~(1 << 12);
             GPIOD->ODR &= ~(1 << 13);
             GPIOD->ODR &= ~(1 << 14);
             GPIOD->ODR &= ~(1 << 15);
-            GPIOD->ODR &= ~(1 << 16);
         }
     }
 }
