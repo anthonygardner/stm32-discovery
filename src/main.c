@@ -36,48 +36,34 @@
 void SystemInit(void) {}
 
 int main(void) {
-    // RCC: Reset and Clock Control register
-    // AHB1ENR: 32-bit register inside RCC
+    // Turn on clock to GPIOA
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
+
+    // Configure PA0 as input
+    GPIOA->MODER &= ~(3U << 0);
+
     // Turn on power to GPIOD
     RCC->AHB1ENR |= (1 << 3);
     
-    // GPIOD: General Purpose Input/Output port D registers
-    // MODER: MODE Register (controls pin function)
-    // MODER uses 2 bits per pin to configure its mode
-    // Decimal 3 is binary 11, which clears TWO adjacent bits (e.g., 24 and 25)
     // Configure pins 12-15 as outputs (all 4 LEDs)
     GPIOD->MODER &= ~((3 << 24) | (3 << 26) | (3 << 28) | (3 << 30));
     GPIOD->MODER |= ((1 << 24) | (1 << 26) | (1 << 28) | (1 << 30));
 
-    // Checkpoint:
-    // What is binary 110 in decimal?  6
-    // What is binary 1111 in decimal? 15
-    // What is decimal 6 in binary?    110
-
     while(1) {
-        // ODR: Output Data Register
-        // Turn on orange LED
-        GPIOD->ODR |= (1 << 13);
-
-        // Crude "wait"
-        for(volatile uint32_t i = 0; i < 5000000; i++);
-
-        // Turn on blue LED
-        GPIOD->ODR |= (1 << 15);
-
-        // Crude "wait"
-        for(volatile uint32_t i = 0; i < 5000000; i++);
-
-        // Turn off orange LED
-        GPIOD->ODR &= ~(1 << 13);
-        
-        // Crude "wait"
-        for(volatile uint32_t i = 0; i < 5000000; i++);
-
-        // Turn off blue LED
-        GPIOD->ODR &= ~(1 << 15);
-
-        // Crude "wait"
-        for(volatile uint32_t i = 0; i < 5000000; i++);
+        // Read button state and toggle LEDs if "high" signal is sent
+        // IDR: Input Data Register
+        if (GPIOA->IDR & (1 << 0)) {
+            // Turn on LEDs
+            GPIOD->ODR |= (1 << 13);
+            GPIOD->ODR |= (1 << 14);
+            GPIOD->ODR |= (1 << 15);
+            GPIOD->ODR |= (1 << 16);
+        } else {
+            // Keep LEDs off
+            GPIOD->ODR &= ~(1 << 13);
+            GPIOD->ODR &= ~(1 << 14);
+            GPIOD->ODR &= ~(1 << 15);
+            GPIOD->ODR &= ~(1 << 16);
+        }
     }
 }
