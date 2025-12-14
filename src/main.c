@@ -1,139 +1,112 @@
-#include <stdio.h>
-
 // Get register names (GPIOD, RCC) and addresses
 #include "stm32f407xx.h"
 
 // Required by startup code
 void SystemInit(void) {}
 
-// Global millisecond counter
-volatile uint32_t msTicks = 0;
+// PE3 = CS_I2C/SPI
+// PA5 = SPI1_SCK
+// PA6 = SPI1_MISO
+// PA7 = SPI1_MOSI
 
-// Returns current millisecond count
-uint32_t get_time_safe(void) {
-    __disable_irq();
-    uint32_t time = msTicks;
-    __enable_irq();
-    return time;
-}
-
-// Initializes SysTick registers
-void SysTick_Init(void) {
-    // From ARM Cortex-M4 Technical Reference Manual, Section 4.2
-    // SYST_CSR: Control and Status Register; Enable, clock source, interrupt
-    // SYST_RVR: Reload Value Register; Value to reload when counter reaches 0
-    // SYST_CVR: Current Value Register; Current counter value
-    // SYST_CALIB: Calibration Value Register; Calibration info
-
-    // Disable during configuration
-    SysTick->CTRL = 0;
-
-    // Set reload value for 1ms tick @ 16MHz
-    SysTick->LOAD = 15999;
-
-    // Clear current value register
-    SysTick->VAL = 0;
-
-    // Configure and enable SysTick
-    SysTick->CTRL = (1 << 2) |  // CLKSOURCE = 1 (SysTick_CTRL_CLKSOURCE_Msk)
-                    (1 << 1) |  // TICKINT = 1 (SysTick_CTRL_TICKINT_Msk)
-                    (1 << 0);   // ENABLE = 1 (SysTick_CTRL_ENABLE_Msk)
-}
-
-// Increments millisecond counter
-void SysTick_Handler(void) {
-    msTicks++;
-}
-
-// Initializes GPIO for LEDs
-void GPIO_Init(void) {
-    // Enable GPIOD clock
-    RCC->AHB1ENR |= (1 << 3);
-
-    // Turn on power to GPIOD
-    RCC->AHB1ENR |= (1 << 3);
-
-    // Configure pins 12-15 as outputs (all 4 LEDs)
-    GPIOD->MODER &= ~((3 << 24) | (3 << 26) | (3 << 28) | (3 << 30));
-    GPIOD->MODER |= ((1 << 24) | (1 << 26) | (1 << 28) | (1 << 30));
-}
-
-void TIM2_Init(void) {
-    // Enable TIM2 clock; 1 at bit 0
-    RCC->APB1ENR |= (1 << 0);
-
-    // Set TIM2 target register
-    TIM2->ARR = 99;
-
-    // Set TIM2 prescaler register
-    TIM2->PSC = 15999;
-
-    // Tell the CPU to listen for interrupts
-    // ISER = Interrupt Set Enable Register; register 0 covers interrupts 0-31
-    NVIC->ISER[0] |= (1 << 28);  // Equivalent to NVIC_EnableIRQ(TIM2_IRQn)
-
-    // Enable TIM2 update interrupt; 1 at bit 0
-    TIM2->DIER |= (1 << 0);
-
-    // Start counting
-    TIM2->CR1 |= (1 << 0);
-}
-
-void TIM2_IRQHandler(void) {
-    // Toggle LEDs
-    GPIOD->ODR ^= (1 << 13);
-
-    // Clear TIM2 status register; 0 at bit 0 (no update occurred)
-    TIM2->SR &= ~(1 << 0);
-}
-
-void USART2_SendChar(char c) {
-    // Wait until transmit buffer is empty
-    while (!(USART2->SR & (1 << 7)))
+// Send / receive a byte on SPI1
+uint8_t SPI1_Transfer(uint8_t data) {
+    // Wait until TX buffer is empty
+    while (!(SPI1->SR & (1 << 1)))
         ;
-    
-    // Write "c" to data register
-    USART2->DR = c;
+
+    // Write data to data register
+    SPI1->DR = data;
+
+    // Wait until RX buffer has data
+    while (!(SPI1->SR & (1 << 0)))
+        ;
+
+    // Read and return data register
+    return SPI1->DR;
 }
 
-void USART2_Init(void) {
-    // Enable USART2 clock
-    RCC->APB1ENR |= (1 << 17);
+// Read a register from accelerometer
+uint8_t LIS3DSH_ReadReg(uint8_t reg) {
+    // Pull chip select low (wake up accel)
+    GPIOE->ODR &= ~(1 << 3);
 
-    // Enable GPIOA clock
-    RCC->AHB1ENR |= (1 << 0);
+    // Send register address with read bit
+    SPI1_Transfer(reg | 0x80);
 
-    // Configure GPIO pins to receive and transmit
-    // Define port A, pins 2 and 3 as alternate functions
-    GPIOA->MODER |= (2 << 4) | (2 << 6);
-    GPIOA->AFR[0] |= (7 << 8) | (7 << 12);
+    // Send dummy byte to generate clock pulses
+    uint8_t result;
+    result = SPI1_Transfer(0x00);
 
-    // Set the baud rate; BRR = f_clock / baud_rate
-    USART2->BRR = 139;
+    // Pull CS high (sleep accel)
+    GPIOE->ODR |= (1 << 3);
 
-    // Enable transmitter
-    USART2->CR1 |= (1 << 3);
-
-    // Enable USART2
-    USART2->CR1 |= (1 << 13);
-
-    // Print something
-    USART2_SendChar('H');
-    USART2_SendChar('i');
+    // Return response
+    return result;
 }
 
 int main(void) {
-    GPIO_Init();
-    USART2_Init();
-    TIM2_Init();
-    SysTick_Init();
+    // Configure PE3
+    // Enable GPIOE clock
+    RCC->AHB1ENR |= (1 << 4);
 
-    uint32_t lastToggle = 0;
+    // Enable SPI1 clock
+    RCC->APB2ENR |= (1 << 12);
 
-    while (1) {
-        if ((get_time_safe() - lastToggle) >= 500) {
-            GPIOD->ODR ^= (1 << 15);
-            lastToggle = get_time_safe();
-        }
+    // Set PE3 as output
+    GPIOE->MODER |= (1 << 6);
+
+    // Set PE3's output data register
+    GPIOE->ODR |= (1 << 3);
+
+    // Configure PA5, PA6, PA7
+    // Enable GPIOA clock
+    RCC->AHB1ENR |= (1 << 0);
+
+    // Configure pins as alternate functions
+    GPIOA->MODER |= (2 << 10) | 
+                    (2 << 12) | 
+                    (2 << 14);
+
+    // Link alternate functions to SPI1 (SPI1/2 are on AF5)
+    GPIOA->AFR[0] |= (5 << 20) | 
+                     (5 << 24) | 
+                     (5 << 28);
+    
+    // Configure SPI1 peripheral
+    // Set clock phase
+    SPI1->CR1 |= (1 << 0);
+
+    // Set clock polarity
+    SPI1->CR1 |= (1 << 1);
+
+    // Set STM32 as master
+    SPI1->CR1 |= (1 << 2);
+
+    // Set baud rate
+    SPI1->CR1 |= (1 << 3);
+
+    // Set internal slave select
+    SPI1->CR1 |= (1 << 8);
+
+    // Set software slave management
+    SPI1->CR1 |= (1 << 9);
+
+    // Enable SPI1
+    SPI1->CR1 |= (1 << 6);
+
+    // Read from accel
+    uint8_t whoami = LIS3DSH_ReadReg(0x0F);
+
+    if (whoami == 0x3F) {
+        // Success - green LED
+        RCC->AHB1ENR |= (1 << 3);
+        GPIOD->MODER |= (1 << 24);
+        GPIOD->ODR |= (1 << 12);
+    } else {
+        // Fail - red LED
+        RCC->AHB1ENR |= (1 << 3);
+        GPIOD->MODER |= (1 << 28);
+        GPIOD->ODR |= (1 << 14);
     }
 }
