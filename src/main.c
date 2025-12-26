@@ -1,83 +1,112 @@
-// Bit shifting: <<
-// 1 << 3 => shift the number 1 left by 3 positions in binary
-// 1 in binary: 0000 0001
-// 1 << 1: 0000 0010 = 2, 1 << 2: 0000 0100 = 4, 1 << 3: 0000 1000 = 8
-// 1 << 4: 0001 0000 = 16, 0100 0000 = 32, 1000 0000 = 64
-
-// Bitwise OR: |=
-// (x |= y) is shorthand for (x = x | y)
-// Use case: Turn ON specific bits without affecting others
-
-// Bitwise AND with NOT: &= ~
-// (x &= ~y) is shorthand for (x = x & (~y))
-// ~ flips all bits (NOT operation)
-// Use case: Turn OFF specific bits without affecting others
-
-// Arrow operator: ->
-// Used for accessing a member of a struct through a pointer
-
-// Binary numbers (only uses 2 digits, 0 and 1)
-// Note: In decimal, each position is a power of 10
-// Decimal | Binary | How to read it
-// --------|--------|---------------
-// 0       | 0      | zero
-// 1       | 1      | one
-// 2       | 10     | one-zero
-// 3       | 11     | one-one
-// 4       | 100    | one-zero-zero
-// 5       | 101    | one-zero-one
-// 6       | 110    | one-one-zero
-// 7       | 111    | one-one-one
-
 // Get register names (GPIOD, RCC) and addresses
 #include "stm32f407xx.h"
 
 // Required by startup code
 void SystemInit(void) {}
 
+// PE3 = CS_I2C/SPI
+// PA5 = SPI1_SCK
+// PA6 = SPI1_MISO
+// PA7 = SPI1_MOSI
+
+// Send / receive a byte on SPI1
+uint8_t SPI1_Transfer(uint8_t data) {
+    // Wait until TX buffer is empty
+    while (!(SPI1->SR & (1 << 1)))
+        ;
+
+    // Write data to data register
+    SPI1->DR = data;
+
+    // Wait until RX buffer has data
+    while (!(SPI1->SR & (1 << 0)))
+        ;
+
+    // Read and return data register
+    return SPI1->DR;
+}
+
+// Read a register from accelerometer
+uint8_t LIS3DSH_ReadReg(uint8_t reg) {
+    // Pull chip select low (wake up accel)
+    GPIOE->ODR &= ~(1 << 3);
+
+    // Send register address with read bit
+    SPI1_Transfer(reg | 0x80);
+
+    // Send dummy byte to generate clock pulses
+    uint8_t result;
+    result = SPI1_Transfer(0x00);
+
+    // Pull CS high (sleep accel)
+    GPIOE->ODR |= (1 << 3);
+
+    // Return response
+    return result;
+}
+
 int main(void) {
-    // RCC: Reset and Clock Control register
-    // AHB1ENR: 32-bit register inside RCC
-    // Turn on power to GPIOD
-    RCC->AHB1ENR |= (1 << 3);
+    // Configure PE3
+    // Enable GPIOE clock
+    RCC->AHB1ENR |= (1 << 4);
+
+    // Enable SPI1 clock
+    RCC->APB2ENR |= (1 << 12);
+
+    // Set PE3 as output
+    GPIOE->MODER |= (1 << 6);
+
+    // Set PE3's output data register
+    GPIOE->ODR |= (1 << 3);
+
+    // Configure PA5, PA6, PA7
+    // Enable GPIOA clock
+    RCC->AHB1ENR |= (1 << 0);
+
+    // Configure pins as alternate functions
+    GPIOA->MODER |= (2 << 10) | 
+                    (2 << 12) | 
+                    (2 << 14);
+
+    // Link alternate functions to SPI1 (SPI1/2 are on AF5)
+    GPIOA->AFR[0] |= (5 << 20) | 
+                     (5 << 24) | 
+                     (5 << 28);
     
-    // GPIOD: General Purpose Input/Output port D registers
-    // MODER: MODE Register (controls pin function)
-    // MODER uses 2 bits per pin to configure its mode
-    // Decimal 3 is binary 11, which clears TWO adjacent bits (e.g., 24 and 25)
-    // Configure pins 12-15 as outputs (all 4 LEDs)
-    GPIOD->MODER &= ~((3 << 24) | (3 << 26) | (3 << 28) | (3 << 30));
-    GPIOD->MODER |= ((1 << 24) | (1 << 26) | (1 << 28) | (1 << 30));
+    // Configure SPI1 peripheral
+    // Set clock phase
+    SPI1->CR1 |= (1 << 0);
 
-    // Checkpoint:
-    // What is binary 110 in decimal?  6
-    // What is binary 1111 in decimal? 15
-    // What is decimal 6 in binary?    110
+    // Set clock polarity
+    SPI1->CR1 |= (1 << 1);
 
-    while(1) {
-        // ODR: Output Data Register
-        // Turn on orange LED
-        GPIOD->ODR |= (1 << 13);
+    // Set STM32 as master
+    SPI1->CR1 |= (1 << 2);
 
-        // Crude "wait"
-        for(volatile uint32_t i = 0; i < 5000000; i++);
+    // Set baud rate
+    SPI1->CR1 |= (1 << 3);
 
-        // Turn on blue LED
-        GPIOD->ODR |= (1 << 15);
+    // Set internal slave select
+    SPI1->CR1 |= (1 << 8);
 
-        // Crude "wait"
-        for(volatile uint32_t i = 0; i < 5000000; i++);
+    // Set software slave management
+    SPI1->CR1 |= (1 << 9);
 
-        // Turn off orange LED
-        GPIOD->ODR &= ~(1 << 13);
-        
-        // Crude "wait"
-        for(volatile uint32_t i = 0; i < 5000000; i++);
+    // Enable SPI1
+    SPI1->CR1 |= (1 << 6);
 
-        // Turn off blue LED
-        GPIOD->ODR &= ~(1 << 15);
+    // Read from accel
+    uint8_t whoami = LIS3DSH_ReadReg(0x0F);
 
-        // Crude "wait"
-        for(volatile uint32_t i = 0; i < 5000000; i++);
+    if (whoami == 0x3F) {
+        // Success - green LED
+        RCC->AHB1ENR |= (1 << 3);
+        GPIOD->MODER |= (1 << 24);
+        GPIOD->ODR |= (1 << 12);
+    } else {
+        // Fail - red LED
+        RCC->AHB1ENR |= (1 << 3);
+        GPIOD->MODER |= (1 << 28);
+        GPIOD->ODR |= (1 << 14);
     }
 }
